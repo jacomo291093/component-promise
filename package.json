@@ -1,0 +1,25 @@
+{
+  "name": "component-promise",
+  "version": "0.0.0-semantically-released",
+  "description": "Creates a promised-based component property that can be used instead of \"callbacks\" for props and etc.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacomo291093/component-promise.git"
+  },
+  "author": "jacomonh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jacomo291093/component-promise/issues"
+  },
+  "homepage": "https://github.com/jacomo291093/component-promise#readme",
+  "devDependencies": {
+    "@types/node": "^18.8.3",
+    "@types/react": "^18.0.21",
+    "react": "^18.2.0",
+    "typescript": "^4.8.4"
+  }
+}
