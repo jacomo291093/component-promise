@@ -1,53 +1,53 @@
 import ComponentPromiseError from "ComponentPromiseError";
-import { useRef } from "react";
+import { useCallback, useState, useMemo } from "react";
 
-const INTERVAL_CHECK_MS: number = 200;
+type ResolveRejectState = {
+  resolve: (value: unknown) => void | null;
+  reject: (reason: any) => void | null;
+};
 
-function useComponentPromise<T>() {
-  const doneVerification = useRef(false);
-  const doneVerificationInterval = useRef<NodeJS.Timer>();
-  const doneValue = useRef<T | PromiseLike<T>>();
+const ResolveRejectStateDefault = {
+  resolve: () => console.log("Component Promise did not start"),
+  reject: () => console.log("Component Promise did not start"),
+};
 
-  const errorVerification = useRef(false);
-  const errorVerificationInterval = useRef<NodeJS.Timer>();
-  const errorValue = useRef<Error>();
-
-  const clear = () => {
-    clearInterval(doneVerificationInterval.current);
-    clearInterval(errorVerificationInterval.current);
-    doneVerification.current = false;
-    errorVerification.current = false;
-  };
-
-  const getComponentPromise = () => {
-    clear();
-    return new Promise<T | undefined>((resolve, reject) => {
-      doneVerificationInterval.current = setInterval(() => {
-        if (doneVerification.current) {
-          clear();
-          resolve(doneValue.current);
-        }
-      }, INTERVAL_CHECK_MS);
-      errorVerificationInterval.current = setInterval(() => {
-        if (errorVerification.current) {
-          clear();
-          reject(errorValue.current);
-        }
-      }, INTERVAL_CHECK_MS);
+function useComponentPromise() {
+  const [{ resolve, reject }, setResolveReject] = useState<ResolveRejectState>(
+    ResolveRejectStateDefault
+  );
+  const start = useCallback(() => {
+    return new Promise((res, rej) => {
+      setResolveReject({
+        resolve: res,
+        reject: rej,
+      });
     });
-  };
+  }, []);
 
-  const resolve = (value?: T) => {
-    doneVerification.current = true;
-    doneValue.current = value;
-  };
+  const handleResolve = useCallback(
+    (value: unknown) => {
+      resolve(value);
+      setResolveReject(ResolveRejectStateDefault);
+    },
+    [resolve]
+  );
 
-  const reject = (error?: Error) => {
-    errorVerification.current = true;
-    errorValue.current = error || new ComponentPromiseError();
-  };
+  const handleReject = useCallback(
+    (reason: any) => {
+      reject(reason || new ComponentPromiseError());
+      setResolveReject(ResolveRejectStateDefault);
+    },
+    [reject]
+  );
 
-  return { getComponentPromise, resolve, reject };
+  return useMemo(
+    () => ({
+      start,
+      resolve: handleResolve,
+      reject: handleReject,
+    }),
+    [resolve, reject]
+  );
 }
 
 export default useComponentPromise;
